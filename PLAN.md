@@ -96,6 +96,30 @@ host bytecode on Arbitrum One via `eth_getCode` (chainId 42161). Verified 2026-0
 GraphOps sender `0xDD6a6f76eb36B873C1C184e8b9b9e762FE216490` (aggregator
 `tap-aggregator-arbitrum-one.graphops.xyz`); E&N sender `0xDDE4cfFd3D9052A9cb618fC05a1Cd02be1f2F467`.
 
+### Arbitrum Sepolia (chain 421614) — VERIFIED (eth_getCode, 2026-05-29)
+
+Current strategy: **prove the full loop on Sepolia first** with a throwaway indexer we run
+ourselves (self-onboard), since we have no mainnet indexer to recruit. Same `graphprotocol/contracts`
+canonical source.
+
+| Contract | Address (VERIFIED) |
+|---|---|
+| GRT (L2GraphToken) | `0xf8c05dCF59E8B28BFD5eed176C562bEbcfc7Ac04` |
+| PaymentsEscrow | `0x4b5D3Da463F7E076bb7CDF5030960bf123245681` |
+| GraphTallyCollector (verifier v2) | `0x382863e7B662027117449bd2c49285582bbBd21B` |
+| SubgraphService | `0xc24A3dAC5d06d771f657A48B20cE1a671B78f26b` |
+| DisputeManager | `0x96e1b86b2739e8A3d59F40F2532caDF9cE8Da088` |
+| HorizonStaking | `0x865365C425f3A593Ffe698D9c4E6707D14d51e08` |
+
+(Brief's Sepolia escrow `0x1e4dC4f9…2d02` was also WRONG; verifier matched.)
+Public Sepolia RPC: `https://sepolia-rollup.arbitrum.io/rpc`.
+
+> **No mainnet indexer available** (the Helsinki box in old notes is not ours). So the self-onboard
+> dodge requires standing up our OWN indexer. Decision: do it on Sepolia (free testnet GRT) to prove
+> gateway→indexer→receipt→RAV→redeem end-to-end, then tackle mainnet recruitment separately.
+> The indexer half (graph-node + indexer-agent/service-rs + tap-agent + stake/provision/allocate) is
+> the larger build; the gateway stack is already scaffolded under `deploy/`.
+
 Arbitrum Sepolia (421614) testnet: TAP Verifier `0x382863e7B662027117449bd2c49285582bbBd21B`;
 TAP Escrow `0x1e4dC4f9F95E102635D8F7ED71c5CdbFa20e2d02`;
 SubgraphService `0xc24A3dAC5d06d771f657A48B20cE1a671B78f26b`;
