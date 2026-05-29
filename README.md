@@ -1,6 +1,6 @@
 # lodestar-gateway
 
-A second, independent [Graph Network](https://thegraph.com) gateway for **Arbitrum One**, post-Horizon.
+An independent [Graph Network](https://thegraph.com) gateway for **Arbitrum One**, post-Horizon.
 
 A gateway sits between data consumers and indexers: it discovers indexers from the network subgraph,
 routes each query to the best of them, pays them with [TAP](https://github.com/semiotic-ai/timeline-aggregation-protocol)
