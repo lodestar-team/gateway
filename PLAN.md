@@ -66,20 +66,35 @@ Single JSON file passed as `argv[1]`. Top-level fields:
 
 ---
 
-## On-chain (Arbitrum One, chain 42161) — CONFIRM ON ARBISCAN BEFORE SENDING FUNDS
+## On-chain (Arbitrum One, chain 42161) — VERIFIED
 
-These are from the brief's secondary sources and have **not** been bytecode-verified here. Treat as
-unconfirmed until checked against `graphprotocol/contracts` Horizon `addresses.json` + Arbiscan.
+Source: `graphprotocol/contracts` `main` (`packages/horizon/addresses.json`,
+`packages/subgraph-service/addresses.json`), read as raw bytes via `jq`. Each address confirmed to
+host bytecode on Arbitrum One via `eth_getCode` (chainId 42161). Verified 2026-05-29.
 
-| Contract | Address (UNVERIFIED) |
-|---|---|
-| GRT | `0x9623063377AD1B27544C965cCd7342f7EA7e88C7` |
-| PaymentsEscrow ("TAP Escrow") | `0x8f477709eF277d4A880801D01A140a9CF88bA0d3` |
-| GraphTallyCollector (`receipts.verifier` v2) | `0x8f69F5C07477Ac46FBc491B1E6D91E2be0111A9e` |
-| SubgraphService (`subgraph_service`) | `0xb2Bb92d0DE618878E438b55D5846cfecD9301105` |
-| HorizonStaking | `0x00669A4CF01450B64E8A2A20E9b1FCB71E61eF03` |
-| DisputeManager (`attestations.dispute_manager`) | **TODO — not located. Required field. Find it.** |
-| Legacy V1 verifier (deprecated) | `0x33f9E93266ce0E108fc85DdE2f71dab555A0F05a` |
+| Contract | Address (VERIFIED) | code |
+|---|---|---|
+| GRT (L2GraphToken) | `0x9623063377AD1B27544C965cCd7342f7EA7e88C7` | 2284 B |
+| PaymentsEscrow (`graph-tally` deposits) | `0xf6Fcc27aAf1fcD8B254498c9794451d82afC673E` | proxy |
+| GraphTallyCollector (`receipts.verifier` v2) | `0x8f69F5C07477Ac46FBc491B1E6D91E2bb0111A9e` | 6608 B |
+| SubgraphService (`subgraph_service`) | `0xb2Bb92d0DE618878E438b55D5846cfecD9301105` | proxy |
+| DisputeManager (`attestations.dispute_manager`) | `0x2FE023a575449AcB698648eD21276293Fa176f96` | proxy |
+| HorizonStaking | `0x00669A4CF01450B64E8A2A20E9b1FCB71E61eF03` | proxy |
+| GraphPayments | `0x7Aae8ae011927BC36Cb4d0d3e81f2E6E30daE06D` | — |
+| Controller | `0x0a8491544221dd212964fbb96487467291b2C97e` | — |
+
+> ⚠️ The original brief's table was WRONG on two critical addresses:
+> - PaymentsEscrow: brief said `0x8f477709…BA0d3` (a legacy/other contract) — **real is `0xf6Fcc27a…C673E`**.
+> - GraphTallyCollector: brief had a flipped nibble (`…E2be0111A9e`) — **real is `…E2bb0111A9e`**.
+> Always paste from this table, never the brief.
+>
+> Still TODO before funding: cross-check GraphTallyCollector + SubgraphService against what indexer
+> `65.109.22.252` actually uses (`receipts_verifier_address_v2`, `subgraph_service_address`) — they
+> MUST match or the indexer rejects our receipts.
+
+**Reference production senders (from brief, for the onboarding-config convention):**
+GraphOps sender `0xDD6a6f76eb36B873C1C184e8b9b9e762FE216490` (aggregator
+`tap-aggregator-arbitrum-one.graphops.xyz`); E&N sender `0xDDE4cfFd3D9052A9cb618fC05a1Cd02be1f2F467`.
 
 Arbitrum Sepolia (421614) testnet: TAP Verifier `0x382863e7B662027117449bd2c49285582bbBd21B`;
 TAP Escrow `0x1e4dC4f9F95E102635D8F7ED71c5CdbFa20e2d02`;
