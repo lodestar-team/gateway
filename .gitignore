@@ -1,0 +1,12 @@
+## IDEs and editors
+/.idea
+/.vscode
+/.claude
+
+## Rust
+**/*.rs.bk
+/target/
+test-outputs/
+
+## Local, machine-specific build env (Homebrew paths etc.)
+/.cargo/

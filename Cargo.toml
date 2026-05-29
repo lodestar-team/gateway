@@ -1,0 +1,97 @@
+[package]
+edition = "2024"
+name = "lodestar-gateway"
+version = "27.6.0"
+
+# Lodestar fork of edgeandnode/gateway (MIT). See README and LICENSE.
+
+[features]
+# Link against a system-installed librdkafka (>= 2.12.1) instead of building the
+# vendored copy. Required on macOS, where the vendored librdkafka C++ wrapper
+# fails to compile against modern libc++. Linux/Docker builds use the static
+# vendored build and do NOT need this. Build locally with:
+#   cargo build --features dynamic-kafka
+dynamic-kafka = ["rdkafka/dynamic-linking"]
+
+[profile.release]
+lto = true
+codegen-units = 1
+
+[profile.perf]
+inherits = "release"
+debug = true
+
+[dependencies]
+anyhow = "1.0"
+axum = { version = "0.8.1", default-features = false, features = [
+    "json",
+    "tokio",
+    "http1",
+] }
+base64 = "0.22.1"
+custom_debug = "0.6.1"
+faster-hex = "0.10.0"
+futures = "0.3"
+graphql = { git = "https://github.com/edgeandnode/toolshed", tag = "v0.4.0", default-features = false }
+headers = "0.4.0"
+hickory-resolver = "0.26.0"
+http = "1.1.0"
+indexer-selection = { git = "https://github.com/edgeandnode/candidate-selection", rev = "8bc7d42" }
+ipnetwork = { version = "0.21.0", default-features = false }
+itertools = "0.14.0"
+lazy_static = "1.4.0"
+ordered-float = "5.0.0"
+parking_lot = "0.12.3"
+pin-project = "1.1.5"
+prometheus = { version = "0.14", default-features = false }
+prost = "0.14.1"
+rand = "0.10.0"
+rdkafka = { version = "0.39.0", features = ["gssapi", "tracing"] }
+reqwest = { version = "0.12", default-features = false, features = [
+    "json",
+    "default-tls",
+    "gzip",
+] }
+semver = { version = "1.0", features = ["serde"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = { version = "1.0.116", features = ["raw_value"] }
+serde_with = "3.8.1"
+snmalloc-rs = "0.7"
+tap_graph = { version = "0.3.4", features = ["v2"] }
+thegraph-core = { version = "0.15.1", features = [
+    "alloy-contract",
+    "alloy-signer-local",
+    "attestation",
+    "serde",
+] }
+thegraph-graphql-http = { version = "0.4.0", features = ["reqwest"] }
+thegraph-headers = { version = "0.3.0", features = ["attestation"] }
+thiserror = "2.0.2"
+tokio = { version = "1.38.0", features = [
+    "macros",
+    "parking_lot",
+    "rt-multi-thread",
+    "signal",
+    "sync",
+    "time",
+] }
+tower = "0.5.1"
+tower-http = { version = "0.6.1", features = ["cors"] }
+tracing = { version = "0.1", default-features = false }
+tracing-subscriber = { version = "0.3", features = [
+    "env-filter",
+    "parking_lot",
+    "json",
+] }
+url = "2.5.0"
+# TODO: Switch back to crates.io once https://github.com/x402-rs/x402-rs/pull/87 is released
+x402-axum = { git = "https://github.com/edgeandnode/x402-rs", branch = "main" }
+x402-types = { git = "https://github.com/edgeandnode/x402-rs", branch = "main" }
+x402-chain-eip155 = { git = "https://github.com/edgeandnode/x402-rs", branch = "main", features = ["server"] }
+
+[dev-dependencies]
+assert_matches = "1.5.0"
+http-body-util = "0.1.1"
+hyper = "1.3.1"
+tokio-test = "0.4.4"
+tower-test = "0.4.0"
