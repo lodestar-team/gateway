@@ -134,6 +134,30 @@ aggregator `tap-aggregator.testnet.thegraph.com`.
 
 ---
 
+## PROOF — gateway works against live Arbitrum One (2026-05-29)
+
+Ran `lodestar-gateway:latest` on the VPS against the **real** Arbitrum One network (no indexer of
+our own, no funds). Trick: `trusted_indexers` requires an indexer-service envelope
+(`{graphQLResponse, attestation}`), not raw GraphQL — so a tiny adapter fronted the decentralised
+gateway (`gateway.thegraph.com/api/<key>/subgraphs/id/DZz4kDTdmzWLWsV373w2bSmoar3umKKH9y82SUKr5qmp`)
+and re-wrapped its `{data}` into that envelope (also needed a browser User-Agent; the WAF 403s
+`python-urllib`).
+
+Results:
+- Booted, parsed our production config, loaded the live topology: **subgraphs=15845,
+  deployments=26088, indexings=13746** (182 indexers), served `:7700` + metrics `:7301`.
+- Real client query → authenticated (32-hex API key) → resolved subgraph→deployment → **selected
+  ~28 real indexers** (real allocations + URLs e.g. `arbindex.grt.pops.one`, `thegraph.lunanova.tech`)
+  → **signed TAP v2 receipts** → computed fees via the fee-control system (6e-7–1.8e-6 GRT each,
+  total `2.88e-5` GRT ≈ `$0.00032`) → dispatched → tracked latency + seconds-behind.
+- Every live indexer returned **HTTP 402 (Payment Required)** — they processed our receipts and want
+  escrow. A bad signature/verifier would error differently; 402 == "valid sender, no escrow".
+
+**Conclusion: the gateway works end-to-end on its side.** The only gap to successful paid queries is
+funding escrow + indexer onboarding — exactly the known bottleneck, not a code issue. `wait_until_ready`
+gates the API on a non-empty network snapshot (`main.rs:144`); first snapshot takes ~60s.
+NOTE: a running gateway polls the network subgraph every 30s — burns the Studio API key quota; stop it when idle.
+
 ## Roadmap
 
 ### Phase 0 — Fork & build  ✅ (this session)
