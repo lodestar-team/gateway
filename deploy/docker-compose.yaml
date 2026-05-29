@@ -1,0 +1,76 @@
+# lodestar-gateway — production stack (Arbitrum One mainnet).
+#
+# Render configs first, then deploy:
+#   ./render.sh && docker compose --env-file runtime/.env up -d
+#
+# Services:
+#   redpanda       — message bus; gateway exports queries, escrow-manager reads them
+#   tap-aggregator — PUBLIC endpoint indexers whitelist (aggregates receipts -> RAVs)
+#   escrow-manager — auto-authorizes signer + auto-tops-up PaymentsEscrow from query debt
+#   gateway        — routes queries, signs TAP v2 receipts
+name: lodestar-gateway
+
+services:
+  redpanda:
+    container_name: lg-redpanda
+    image: docker.redpanda.com/redpandadata/redpanda:v23.3.5
+    command:
+      - redpanda start
+      - --smp 1
+      - --memory 1G
+      - --mode dev-container
+      - --default-log-level=info
+      - --kafka-addr=INTERNAL://0.0.0.0:9092
+      - --advertise-kafka-addr=INTERNAL://redpanda:9092
+    volumes:
+      - redpanda-data:/var/lib/redpanda/data
+    healthcheck:
+      interval: 2s
+      retries: 60
+      test: rpk topic list --brokers=localhost:9092
+    restart: on-failure:3
+
+  tap-aggregator:
+    container_name: lg-tap-aggregator
+    image: ghcr.io/graphprotocol/graph_tally_aggregator:v0.7.1
+    environment:
+      GRAPH_TALLY_PORT: "7610"
+      GRAPH_TALLY_PRIVATE_KEY: ${SIGNER_KEY:?render.sh must inject SIGNER_KEY}
+      GRAPH_TALLY_DOMAIN_CHAIN_ID: ${CHAIN_ID}
+      GRAPH_TALLY_DOMAIN_VERIFYING_CONTRACT: ${GRAPH_TALLY_COLLECTOR}
+      RUST_LOG: info,graph_tally_aggregator=debug
+    ports: ["${AGGREGATOR_PORT}:7610"]
+    restart: on-failure:3
+
+  escrow-manager:
+    container_name: lg-escrow-manager
+    image: ghcr.io/graphprotocol/graph_tally_escrow_manager:v2.0.0
+    depends_on:
+      redpanda: { condition: service_healthy }
+    volumes:
+      - ./runtime/escrow-manager.json:/config/config.json:ro
+    command: ["/config/config.json"]
+    environment:
+      RUST_LOG: info,graph_tally_escrow_manager=debug
+    restart: on-failure:3
+
+  gateway:
+    container_name: lg-gateway
+    image: lodestar-gateway:latest
+    depends_on:
+      redpanda: { condition: service_healthy }
+    volumes:
+      - ./runtime/gateway.json:/config/config.json:ro
+    command: ["/config/config.json"]
+    environment:
+      RUST_LOG: info,lodestar_gateway=debug
+      RUST_BACKTRACE: "1"
+    ports: ["${GATEWAY_PORT}:7700"]
+    healthcheck:
+      interval: 5s
+      retries: 30
+      test: curl -f http://127.0.0.1:7700/ || exit 1
+    restart: on-failure:3
+
+volumes:
+  redpanda-data:

@@ -10,3 +10,7 @@ test-outputs/
 
 ## Local, machine-specific build env (Homebrew paths etc.)
 /.cargo/
+
+## Deploy secrets + rendered runtime configs (contain keys / live values)
+deploy/.env
+deploy/runtime/

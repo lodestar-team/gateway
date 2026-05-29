@@ -1,0 +1,19 @@
+# Dev builder: produces a DEBUG Linux binary of lodestar-gateway for mounting
+# into the local-network stack via compose/dev/gateway.yaml.
+#
+# Debug (no LTO) for fast iteration. Static vendored librdkafka — same deps as
+# local-network's own gateway image, so no dynamic-kafka feature needed here.
+# Extract the binary with scripts/build-linux-gateway.sh (buildx --output).
+
+FROM rust:1-bookworm AS build
+RUN apt-get update && apt-get install -y \
+    clang cmake git libsasl2-dev libssl-dev pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /opt/gateway
+COPY ./ ./
+ENV CC=clang CXX=clang++
+RUN cargo build --bin lodestar-gateway --color=always
+
+# Export stage: contains only the binary, so `--output type=local` extracts it.
+FROM scratch AS export
+COPY --from=build /opt/gateway/target/debug/lodestar-gateway /lodestar-gateway
