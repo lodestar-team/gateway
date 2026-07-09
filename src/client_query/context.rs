@@ -19,4 +19,6 @@ pub struct Context {
     pub indexing_perf: IndexingPerformance,
     pub attestation_domain: &'static Eip712Domain,
     pub reporter: mpsc::UnboundedSender<reports::ClientRequest>,
+    /// Resolved indexer-selection scoring weights (defaults when unset in config).
+    pub selection_weights: indexer_selection::Weights,
 }

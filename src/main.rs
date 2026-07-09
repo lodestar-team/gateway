@@ -184,6 +184,7 @@ async fn main() {
         network,
         attestation_domain,
         reporter,
+        selection_weights: conf.selection.unwrap_or_default(),
     };
 
     let blocklist: watch::Receiver<Vec<BlocklistEntry>> = indexer_blocklist.blocklist;

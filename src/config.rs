@@ -50,6 +50,11 @@ pub struct Config {
     /// Minimum indexer-service version that will receive queries
     #[serde_as(as = "DisplayFromStr")]
     pub min_indexer_version: Version,
+    /// Optional overrides for the indexer-selection scoring weights. When absent, the built-in
+    /// defaults are used (behaviour identical to prior releases). A partial block fills all other
+    /// fields with their defaults.
+    #[serde(default)]
+    pub selection: Option<indexer_selection::Weights>,
     /// Trusted indexers that can serve the network subgraph for free
     pub trusted_indexers: Vec<TrustedIndexer>,
     /// Maximum acceptable lag (in seconds) for network subgraph responses (default: 120)

@@ -272,7 +272,8 @@ async fn run_indexer_queries(
     // If a client query cannot be handled by the available indexers, we should give a reason for
     // all the available indexers in the `bad indexers` response.
     while !candidates.is_empty() && (start_time.elapsed() < Duration::from_secs(60)) {
-        let selections: ArrayVec<_, SELECTION_LIMIT> = indexer_selection::select(&candidates);
+        let selections: ArrayVec<_, SELECTION_LIMIT> =
+            indexer_selection::select_with_weights(&candidates, &ctx.selection_weights);
         if selections.is_empty() {
             // Candidates that would never be selected should be filtered out for improved errors.
             tracing::error!("no candidates selected");
